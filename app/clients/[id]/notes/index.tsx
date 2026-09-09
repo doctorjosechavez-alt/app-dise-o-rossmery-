@@ -94,13 +94,7 @@ export default function FieldNotesListScreen() {
               <Text style={styles.area}>{item.areaName}</Text>
             ) : null}
             <Text style={styles.description} numberOfLines={2}>
-              {item.description ||
-                item.transcript ||
-                (item.type === "foto"
-                  ? "Sin descripción"
-                  : item.transcriptStatus === "pending"
-                    ? "Transcribiendo…"
-                    : "Sin descripción")}
+              {item.description || "Sin descripción"}
             </Text>
           </Card>
         )}

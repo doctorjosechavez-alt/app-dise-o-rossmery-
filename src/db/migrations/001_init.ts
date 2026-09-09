@@ -114,8 +114,12 @@ CREATE TABLE field_notes (
   file_uri          TEXT,          -- URI local (document directory de la app); NULL si type = 'texto'
   media_library_id  TEXT,          -- id en expo-media-library, si además se guardó en la galería
   duration_seconds  REAL,          -- solo video/voz
-  description       TEXT,          -- descripción corta de qué muestra (escrita o copiada del transcript)
-  transcript        TEXT,          -- texto transcrito automáticamente (solo type = 'voz' o 'video')
+  description       TEXT,          -- descripción corta de qué muestra
+  -- transcript / transcript_status: sin usar por ahora — la app no
+  -- transcribe notas de voz automáticamente (ver historial del proyecto).
+  -- Se dejan las columnas por si se retoma más adelante; siempre quedan
+  -- NULL / 'not_applicable'.
+  transcript        TEXT,
   transcript_status TEXT NOT NULL DEFAULT 'not_applicable'
                     CHECK (transcript_status IN (
                       'not_applicable', -- type = 'foto' o 'texto'
@@ -131,8 +135,6 @@ CREATE TABLE field_notes (
 
 CREATE INDEX idx_field_notes_client ON field_notes(client_id);
 CREATE INDEX idx_field_notes_type   ON field_notes(client_id, type);
--- Búsqueda por palabra clave sobre description + transcript (LIKE); si la
--- cantidad de notas crece mucho, migrar a FTS5.
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- 6. PENDIENTES (con recordatorio en calendario nativo)

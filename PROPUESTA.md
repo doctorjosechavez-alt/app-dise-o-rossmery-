@@ -7,20 +7,18 @@ modelo de datos y qué hay construido hasta ahora.
 ## Estado actual
 
 **Los 6 módulos del pedido original están 100% construidos**: Clientes,
-Pinturas, Materiales y acabados, Notas de campo (foto/video/voz con
-transcripción/texto), Pendientes (con calendario nativo), y Medidas
+Pinturas, Materiales y acabados, Notas de campo (foto/video/voz/texto),
+Pendientes (con calendario nativo + notificación local), y Medidas
 estándar (biblioteca poblada + buscador). Cada uno con listar, crear,
 ver/editar y eliminar donde aplica.
 
 Verificado de verdad, no solo escrito: `tsc` y `eslint` limpios, y el
-bundle completo de Metro exporta sin errores — **1059 módulos**, incluyendo
-`expo-speech-recognition`, `@react-native-community/datetimepicker` y
-`expo-notifications`.
+bundle completo de Metro exporta sin errores — **1054 módulos**, incluyendo
+`@react-native-community/datetimepicker` y `expo-notifications`.
 
-Además, ya agregados: botón para guardar fotos/videos de notas de campo
-en la galería, y notificaciones locales para pendientes con fecha. Los
-catálogos de `areas.ts` y `standardMeasures.ts` quedaron confirmados sin
-cambios.
+Además: botón para guardar fotos/videos de notas de campo en la galería,
+y notificaciones locales para pendientes con fecha. Los catálogos de
+`areas.ts` y `standardMeasures.ts` quedaron confirmados sin cambios.
 
 - Navegación con expo-router (`app/`), con la ficha de cada cliente como
   "hub" hacia sus 4 módulos (con conteo real de cada uno).
@@ -33,29 +31,22 @@ cambios.
   campos de texto, cards, badge de estado — con la paleta y tipografía ya
   aplicadas.
 
-## ⚠️ Importante: esta app ya NO se puede probar con Expo Go
-
-Con el módulo de transcripción de voz (`expo-speech-recognition`) la app
-pasó a depender de un módulo nativo de terceros que **no viene incluido
-en la app Expo Go**. A partir de ahora hace falta un *development build*
-propio — no es mucho más complicado, pero es un paso extra la primera vez:
+## Cómo probarla
 
 ```bash
 npm install
-npx expo prebuild        # genera las carpetas ios/ y android/
-npx expo run:ios         # o: npx expo run:android
+npx expo start
 ```
 
-Esto instala una app propia (con ícono "Estudio de Obra") en el
-simulador o en tu teléfono conectado por cable. Después del primer build,
-`npx expo start` funciona normal para seguir desarrollando (recarga en
-caliente) — el paso de `run:ios`/`run:android` solo hace falta de nuevo si
-se agrega otro módulo nativo nuevo. También se puede generar el build en
-la nube con **EAS Build** (`eas build --profile development`) si no
-quieres compilar en tu máquina.
+Se prueba con la app **Expo Go** (gratis, App Store) escaneando el código
+QR — no hace falta cuenta de Apple Developer ni compilar nada. Usa Node
+18 o 20 para los comandos de Expo (Node 22 funciona pero es menos
+probado por el propio Expo).
 
-Usa Node 18 o 20 para los comandos de Expo (Node 22 funciona pero es
-menos probado por el propio Expo).
+Todos los módulos nativos que usa la app (cámara, calendario,
+notificaciones locales, galería, selector de fecha, base de datos) vienen
+incluidos en Expo Go — no hay ningún módulo de terceros que requiera un
+*development build* propio.
 
 ## Los 6 módulos
 
@@ -67,9 +58,8 @@ menos probado por el propio Expo).
 3. **Materiales y acabados** — por cliente: tipo (tela, piso, madera,
    mármol/piedra, mueble, otro), referencia, proveedor, detalle libre.
    Filtro por tipo en la lista.
-4. **Notas de campo** — foto, video, nota de voz (con transcripción
-   automática) o texto. Ver detalle de la arquitectura de grabación más
-   abajo.
+4. **Notas de campo** — foto, video, nota de voz o texto. Ver detalle de
+   la grabación más abajo.
 5. **Pendientes** — título, detalle, prioridad (alta/media/baja), fecha
    opcional. Al ponerle fecha pasan dos cosas: se crea un evento real en
    el calendario nativo del teléfono (Android: en un calendario local
@@ -87,24 +77,18 @@ menos probado por el propio Expo).
 
 ## Cómo funciona la grabación de notas de voz
 
-Es la parte más delicada de la app técnicamente — así quedó diseñado:
-
-- **Grabar SIEMPRE funciona**, tenga o no el teléfono soporte de
-  transcripción — eso era un requisito explícito tuyo y no quise
-  arriesgarlo.
-- Al tocar "Grabar" (`src/features/fieldNotes/useVoiceRecorder.ts`), la
-  app revisa si el teléfono soporta reconocimiento de voz **on-device**.
-  - **Si sí**: graba y transcribe al mismo tiempo con
-    `expo-speech-recognition` (un solo motor nativo hace ambas cosas — así
-    se evita cualquier problema de formato de audio incompatible entre
-    "grabar" y "transcribir" por separado). Se ve el texto transcribiéndose
-    en vivo mientras hablas.
-  - **Si no**: graba con `expo-av` normal, sin transcripción
-    (`transcript_status = 'unavailable'`) — la ficha de la nota muestra el
-    campo de descripción manual como respaldo.
+- Se graba con `expo-av` (`src/features/fieldNotes/useVoiceRecorder.ts`)
+  — sin transcripción automática. Se probó y se descartó a propósito: la
+  transcripción on-device (`expo-speech-recognition`) requería un
+  *development build* con cuenta de Apple Developer para poder probar la
+  app en iPhone, así que se priorizó poder usarla ya mismo con Expo Go.
+  Si más adelante quieres retomarla (por ejemplo cuando ya tengas cuenta
+  de Apple Developer por otra razón), el historial de commits del
+  proyecto tiene la implementación completa como referencia.
 - El archivo de audio queda guardado en el almacenamiento propio de la
   app (`FileSystem.documentDirectory/field-notes/`), funciona 100%
-  offline, y se reproduce directo desde la ficha de la nota.
+  offline, y se reproduce directo desde la ficha de la nota. La
+  descripción de la nota se escribe a mano.
 - **Fotos y video**: se capturan con una pantalla de cámara propia
   (`expo-camera`, `app/clients/[id]/notes/camera.tsx`) y se guardan
   también en el almacenamiento propio de la app. Desde la ficha de la
@@ -145,7 +129,7 @@ marcas como hecho, también se cancela sola; si lo eliminas, igual.
           index.tsx            # lista (filtro por tipo)
           new.tsx               # elegir: foto / video / voz / texto
           camera.tsx            # captura de foto/video (pantalla completa)
-          record.tsx            # grabación de voz (con transcripción en vivo)
+          record.tsx            # grabación de voz
           save.tsx              # completar área + descripción y guardar
           [noteId].tsx           # ver/reproducir/editar/eliminar
   assets/
@@ -207,8 +191,10 @@ o envuelve ahí adentro y las pantallas no cambian.
 6. **`field_notes`** — notas de campo: tipo (foto/video/voz/texto),
    `area_id` (opcional — una nota puede ser general), `file_uri` (archivo
    guardado en el almacenamiento propio de la app), `media_library_id`
-   opcional si además se copia a la galería, `transcript` +
-   `transcript_status`, descripción corta, fecha del recorrido.
+   opcional si además se copia a la galería, descripción corta, fecha del
+   recorrido. La tabla conserva columnas `transcript`/`transcript_status`
+   sin usar (para una eventual transcripción automática más adelante),
+   pero la app ya no las escribe.
 7. **`tasks`** — pendientes: prioridad (alta/media/baja), fecha,
    `done`/`archived`, `calendar_event_id` para poder editar o borrar el
    evento del calendario nativo, y `notification_id` (agregado en

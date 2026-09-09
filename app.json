@@ -45,13 +45,6 @@
           "isAccessMediaLocationEnabled": false
         }
       ],
-      [
-        "expo-speech-recognition",
-        {
-          "microphonePermission": "Se usa el micrófono para grabar notas de voz y el audio de los videos.",
-          "speechRecognitionPermission": "Se usa el reconocimiento de voz para transcribir las notas de voz automáticamente."
-        }
-      ],
       "expo-notifications"
     ]
   }

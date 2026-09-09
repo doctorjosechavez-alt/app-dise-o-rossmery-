@@ -2,7 +2,7 @@ import { getReadyDb } from "@/db/client";
 import { newId } from "@/db/uuid";
 import { deleteMediaFile } from "@/services/fileStorage";
 
-import type { FieldNote, FieldNoteInput, FieldNoteType, TranscriptStatus } from "./types";
+import type { FieldNote, FieldNoteInput, FieldNoteType } from "./types";
 
 type FieldNoteRow = {
   id: string;
@@ -14,8 +14,6 @@ type FieldNoteRow = {
   media_library_id: string | null;
   duration_seconds: number | null;
   description: string | null;
-  transcript: string | null;
-  transcript_status: TranscriptStatus;
   recorded_at: string;
   created_at: string;
   updated_at: string;
@@ -32,8 +30,6 @@ function toFieldNote(row: FieldNoteRow): FieldNote {
     mediaLibraryId: row.media_library_id,
     durationSeconds: row.duration_seconds,
     description: row.description,
-    transcript: row.transcript,
-    transcriptStatus: row.transcript_status,
     recordedAt: row.recorded_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -79,9 +75,8 @@ export async function createFieldNote(
   await db.runAsync(
     `INSERT INTO field_notes
       (id, client_id, area_id, type, file_uri, media_library_id,
-       duration_seconds, description, transcript, transcript_status,
-       recorded_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       duration_seconds, description, recorded_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     id,
     clientId,
     input.areaId ?? null,
@@ -90,8 +85,6 @@ export async function createFieldNote(
     input.mediaLibraryId ?? null,
     input.durationSeconds ?? null,
     input.description ?? null,
-    input.transcript ?? null,
-    input.transcriptStatus ?? "not_applicable",
     input.recordedAt,
     now,
     now
@@ -134,22 +127,6 @@ export async function updateFieldNoteMediaLibraryId(
   await db.runAsync(
     `UPDATE field_notes SET media_library_id = ?, updated_at = ? WHERE id = ?`,
     mediaLibraryId,
-    now,
-    id
-  );
-}
-
-export async function updateFieldNoteTranscript(
-  id: string,
-  transcript: string | null,
-  status: TranscriptStatus
-): Promise<void> {
-  const db = await getReadyDb();
-  const now = new Date().toISOString();
-  await db.runAsync(
-    `UPDATE field_notes SET transcript = ?, transcript_status = ?, updated_at = ? WHERE id = ?`,
-    transcript,
-    status,
     now,
     id
   );
