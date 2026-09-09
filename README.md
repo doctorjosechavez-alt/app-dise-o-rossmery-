@@ -12,15 +12,12 @@ backend ni cuentas.
 
 ```bash
 npm install
-npx expo prebuild
-npx expo run:ios      # o: npx expo run:android
+npx expo start
 ```
 
-⚠️ Ya **no** se puede probar con la app Expo Go — el módulo de
-transcripción de voz requiere un *development build* propio (ver detalle
-en [`PROPUESTA.md`](./PROPUESTA.md)). Después del primer build, `npx expo
-start` sirve para seguir desarrollando con recarga en caliente. Usa Node
-18 o 20.
+Escanea el código QR con la app **Expo Go** (gratis, App Store/Play
+Store) — no hace falta cuenta de desarrollador ni compilar nada. Usa
+Node 18 o 20.
 
 ## Qué tiene hasta ahora
 
@@ -33,10 +30,9 @@ Los 6 módulos del pedido original están construidos:
   acabado, nota. Filtro por área.
 - **Materiales y acabados**: por cliente — tipo, referencia, proveedor,
   detalle. Filtro por tipo.
-- **Notas de campo**: foto, video, nota de voz (con transcripción
-  automática *on-device*, mejor esfuerzo) o texto — reproducibles desde la
-  ficha de la nota, con botón para guardar fotos/videos también en la
-  galería del teléfono.
+- **Notas de campo**: foto, video, nota de voz o texto — reproducibles
+  desde la ficha de la nota, con botón para guardar fotos/videos también
+  en la galería del teléfono.
 - **Pendientes**: título, prioridad, fecha opcional con recordatorio real
   en el calendario nativo del teléfono **y** notificación local a esa
   fecha/hora. Marcar como hecho, archivar.
@@ -44,9 +40,8 @@ Los 6 módulos del pedido original están construidos:
   y distancias típicas de diseño de interiores), ~34 medidas con buscador
   por palabra clave, accesible desde la lista de clientes.
 
-Ver el detalle completo de la estructura de carpetas, el modelo de datos
-SQLite, y cómo funciona la grabación/transcripción de notas de voz en
-[`PROPUESTA.md`](./PROPUESTA.md).
+Ver el detalle completo de la estructura de carpetas y el modelo de datos
+SQLite en [`PROPUESTA.md`](./PROPUESTA.md).
 
 ## Diseño visual
 

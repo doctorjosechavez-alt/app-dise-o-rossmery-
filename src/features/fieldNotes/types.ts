@@ -7,13 +7,6 @@ export const FIELD_NOTE_TYPE_LABEL: Record<FieldNoteType, string> = {
   texto: "Texto",
 };
 
-export type TranscriptStatus =
-  | "not_applicable"
-  | "pending"
-  | "done"
-  | "unavailable"
-  | "error";
-
 export type FieldNote = {
   id: string;
   clientId: string;
@@ -24,8 +17,6 @@ export type FieldNote = {
   mediaLibraryId: string | null;
   durationSeconds: number | null;
   description: string | null;
-  transcript: string | null;
-  transcriptStatus: TranscriptStatus;
   recordedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -38,7 +29,5 @@ export type FieldNoteInput = {
   mediaLibraryId?: string | null;
   durationSeconds?: number | null;
   description?: string | null;
-  transcript?: string | null;
-  transcriptStatus?: TranscriptStatus;
   recordedAt: string;
 };

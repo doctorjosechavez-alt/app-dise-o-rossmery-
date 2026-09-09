@@ -186,21 +186,6 @@ export default function FieldNoteDetailScreen() {
           )
         ) : null}
 
-        {note.type === "voz" ? (
-          <View style={styles.transcriptBox}>
-            <Text style={styles.transcriptLabel}>Transcripción</Text>
-            {note.transcriptStatus === "done" && note.transcript ? (
-              <Text style={styles.transcriptText}>{note.transcript}</Text>
-            ) : note.transcriptStatus === "pending" ? (
-              <Text style={styles.transcriptMuted}>Transcribiendo…</Text>
-            ) : (
-              <Text style={styles.transcriptMuted}>
-                No disponible en este teléfono — usa la descripción de abajo.
-              </Text>
-            )}
-          </View>
-        ) : null}
-
         <Text style={styles.label}>Área</Text>
         <AreaPicker value={areaId} onChange={setAreaId} allowNone />
 
@@ -269,25 +254,6 @@ const styles = StyleSheet.create({
     fontFamily: typography.bodyBold,
     fontSize: 14,
     color: "#4B7B4E",
-  },
-  transcriptBox: {
-    gap: spacing.xs,
-  },
-  transcriptLabel: {
-    fontFamily: typography.bodyBold,
-    fontSize: 13,
-    color: colors.muted,
-  },
-  transcriptText: {
-    fontFamily: typography.body,
-    fontSize: 16,
-    color: colors.ink,
-  },
-  transcriptMuted: {
-    fontFamily: typography.body,
-    fontSize: 14,
-    color: colors.muted,
-    fontStyle: "italic",
   },
   label: {
     fontFamily: typography.bodyBold,

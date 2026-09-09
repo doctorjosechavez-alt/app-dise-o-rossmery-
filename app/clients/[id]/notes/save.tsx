@@ -7,7 +7,7 @@ import { Button } from "@/components/Button";
 import { TextField } from "@/components/TextField";
 import { AreaPicker } from "@/features/areas/AreaPicker";
 import { createFieldNote } from "@/features/fieldNotes/fieldNotes.repository";
-import type { FieldNoteType, TranscriptStatus } from "@/features/fieldNotes/types";
+import type { FieldNoteType } from "@/features/fieldNotes/types";
 import { deleteMediaFile } from "@/services/fileStorage";
 import { colors, radius, spacing, typography } from "@/theme";
 
@@ -24,14 +24,12 @@ export default function SaveFieldNoteScreen() {
     type: FieldNoteType;
     fileUri?: string;
     durationSeconds?: string;
-    transcript?: string;
-    transcriptStatus?: TranscriptStatus;
   }>();
   const router = useRouter();
   const { id, type, fileUri } = params;
 
   const [areaId, setAreaId] = useState<string | null>(null);
-  const [description, setDescription] = useState(params.transcript ?? "");
+  const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
   const isTextNote = type === "texto";
@@ -49,8 +47,6 @@ export default function SaveFieldNoteScreen() {
           ? Number(params.durationSeconds)
           : null,
         description: description.trim() || null,
-        transcript: params.transcript?.trim() || null,
-        transcriptStatus: params.transcriptStatus ?? "not_applicable",
         recordedAt: new Date().toISOString(),
       });
       router.dismissAll();
@@ -83,13 +79,6 @@ export default function SaveFieldNoteScreen() {
             useNativeControls
             resizeMode={ResizeMode.CONTAIN}
           />
-        ) : null}
-
-        {type === "voz" && params.transcriptStatus === "unavailable" ? (
-          <Text style={styles.hint}>
-            Este teléfono no pudo transcribir automáticamente — puedes escribir
-            una descripción corta a mano.
-          </Text>
         ) : null}
 
         <Text style={styles.label}>Área</Text>
@@ -146,11 +135,6 @@ const styles = StyleSheet.create({
     fontFamily: typography.bodyBold,
     fontSize: 14,
     color: colors.ink,
-  },
-  hint: {
-    fontFamily: typography.body,
-    fontSize: 14,
-    color: colors.muted,
   },
   multiline: {
     minHeight: 90,

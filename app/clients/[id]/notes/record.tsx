@@ -15,7 +15,7 @@ function formatElapsed(totalSeconds: number): string {
 export default function RecordVoiceNoteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { isRecording, elapsedSeconds, liveTranscript, start, stop, cancel } =
+  const { isRecording, elapsedSeconds, start, stop, cancel } =
     useVoiceRecorder();
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -49,8 +49,6 @@ export default function RecordVoiceNoteScreen() {
           type: "voz",
           fileUri: result.fileUri,
           durationSeconds: String(result.durationSeconds),
-          transcript: result.transcript ?? "",
-          transcriptStatus: result.transcriptStatus,
         },
       });
     } finally {
@@ -64,12 +62,6 @@ export default function RecordVoiceNoteScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Text style={styles.timer}>{formatElapsed(elapsedSeconds)}</Text>
-
-        {isRecording && liveTranscript ? (
-          <Text style={styles.liveTranscript} numberOfLines={4}>
-            {liveTranscript}
-          </Text>
-        ) : null}
 
         <Pressable
           style={[styles.recordButton, isRecording && styles.recordButtonActive]}
@@ -107,13 +99,6 @@ const styles = StyleSheet.create({
     fontFamily: typography.headingBold,
     fontSize: 40,
     color: colors.ink,
-  },
-  liveTranscript: {
-    fontFamily: typography.body,
-    fontSize: 16,
-    color: colors.muted,
-    textAlign: "center",
-    paddingHorizontal: spacing.lg,
   },
   recordButton: {
     width: 120,
