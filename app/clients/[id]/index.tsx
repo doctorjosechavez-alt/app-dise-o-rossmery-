@@ -13,10 +13,10 @@ import {
 } from "@/features/clients/clients.repository";
 import { ClientForm } from "@/features/clients/ClientForm";
 import type { Client, ClientInput } from "@/features/clients/types";
+import { listPaintsByClient } from "@/features/paints/paints.repository";
 import { colors, spacing, typography } from "@/theme";
 
-const HUB_SECTIONS = [
-  { label: "Pinturas", description: "Marca, color y acabado por área" },
+const COMING_SOON_SECTIONS = [
   { label: "Materiales y acabados", description: "Telas, pisos, madera, mármol…" },
   { label: "Notas de campo", description: "Foto, video, voz y texto" },
   { label: "Pendientes", description: "Tareas con recordatorio en calendario" },
@@ -26,14 +26,18 @@ export default function ClientDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [client, setClient] = useState<Client | null>(null);
+  const [paintsCount, setPaintsCount] = useState(0);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(() => {
     if (!id) return;
     setLoading(true);
-    getClient(id)
-      .then(setClient)
+    Promise.all([getClient(id), listPaintsByClient(id)])
+      .then(([clientResult, paints]) => {
+        setClient(clientResult);
+        setPaintsCount(paints.length);
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -121,7 +125,19 @@ export default function ClientDetailScreen() {
 
         <Text style={styles.sectionTitle}>De este proyecto</Text>
         <View style={styles.hubList}>
-          {HUB_SECTIONS.map((section) => (
+          <Card
+            onPress={() => router.push(`/clients/${id}/paints`)}
+            style={styles.hubCard}
+          >
+            <Text style={styles.hubLabel}>Pinturas</Text>
+            <Text style={styles.hubDescription}>Marca, color y acabado por área</Text>
+            <Text style={styles.hubCount}>
+              {paintsCount === 0
+                ? "Sin pinturas todavía"
+                : `${paintsCount} ${paintsCount === 1 ? "pintura" : "pinturas"}`}
+            </Text>
+          </Card>
+          {COMING_SOON_SECTIONS.map((section) => (
             <Card key={section.label} style={styles.hubCard}>
               <Text style={styles.hubLabel}>{section.label}</Text>
               <Text style={styles.hubDescription}>{section.description}</Text>
@@ -202,6 +218,12 @@ const styles = StyleSheet.create({
     fontFamily: typography.bodyBold,
     fontSize: 12,
     color: colors.blue,
+    marginTop: spacing.xs,
+  },
+  hubCount: {
+    fontFamily: typography.bodyBold,
+    fontSize: 12,
+    color: colors.terracotta,
     marginTop: spacing.xs,
   },
   actions: {

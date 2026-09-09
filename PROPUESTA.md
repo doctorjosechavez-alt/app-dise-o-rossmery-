@@ -7,7 +7,7 @@ modelo de datos y qué hay construido hasta ahora.
 ## Estado actual
 
 Ya está construido y probado (compila con `tsc`, pasa `eslint`, y el bundle
-completo de Metro exporta sin errores — 842 módulos, incluyendo fuentes):
+completo de Metro exporta sin errores — 849 módulos, incluyendo fuentes):
 
 - Navegación con expo-router (`app/`).
 - Fuentes reales Fraunces + Source Serif 4 (instancias estáticas generadas
@@ -16,9 +16,14 @@ completo de Metro exporta sin errores — 842 módulos, incluyendo fuentes):
 - Base de datos: migraciones y seeds (áreas + medidas estándar) corriendo
   de verdad al iniciar la app (`app/_layout.tsx` → `initDb()`).
 - **Módulo de Clientes completo**: listar, crear, ver ficha, editar,
-  eliminar. La ficha de cada cliente ya muestra los 4 espacios donde va a
-  colgar el resto ("Pinturas", "Materiales y acabados", "Notas de campo",
-  "Pendientes"), marcados como "Próximamente" — son el siguiente paso.
+  eliminar.
+- **Módulo de Pinturas completo**: listar por cliente (con filtro por
+  área), crear, ver/editar, eliminar. Selección de área con el catálogo
+  fijo (`AreaPicker`, compartido con futuros módulos). La ficha de cliente
+  muestra el conteo real de pinturas y navega a la lista.
+- Los otros 3 espacios ("Materiales y acabados", "Notas de campo",
+  "Pendientes") siguen marcados "Próximamente" en la ficha de cliente —
+  son el siguiente paso.
 - Kit de componentes compartidos (`src/components/`): botones grandes,
   campos de texto, cards, badge de estado — con la paleta y tipografía ya
   aplicadas.
@@ -35,10 +40,11 @@ resolución de módulos de la CLI de Expo. Ya está corregido.
 
 ## Siguiente paso
 
-Construir los 4 módulos restantes (Pinturas, Materiales, Notas de campo,
-Pendientes) con el mismo patrón que Clientes: `types.ts` +
-`*.repository.ts` + pantallas en `app/clients/[id]/...`, y reemplazar los
-bloques "Próximamente" de la ficha de cliente por accesos reales.
+Construir los 3 módulos restantes (Materiales, Notas de campo,
+Pendientes) con el mismo patrón que Clientes/Pinturas: `types.ts` +
+`*.repository.ts` (+ un picker compartido si aplica) + pantallas en
+`app/clients/[id]/...`, y reemplazar los bloques "Próximamente" de la
+ficha de cliente por accesos reales.
 
 ## Estructura de carpetas
 
@@ -54,7 +60,12 @@ bloques "Próximamente" de la ficha de cliente por accesos reales.
     index.tsx              # lista de clientes
     clients/
       new.tsx              # crear cliente (modal)
-      [id].tsx              # ficha de cliente (ver/editar/eliminar)
+      [id]/
+        index.tsx           # ficha de cliente (ver/editar/eliminar)
+        paints/
+          index.tsx          # lista de pinturas (filtro por área)
+          new.tsx             # crear pintura (modal)
+          [paintId].tsx        # ver/editar/eliminar pintura
   assets/
     fonts/                 # Fraunces + Source Serif 4 (.ttf reales) + licencias
     images/
@@ -73,11 +84,12 @@ bloques "Próximamente" de la ficha de cliente por accesos reales.
       spacing.ts
     features/                # un módulo por dominio, cada uno con su
       clients/               # repositorio de datos + tipos + formulario (✅)
-      paints/                 # (pendiente)
-      materials/               # (pendiente)
-      standardMeasures/         # (pendiente)
-      fieldNotes/                # (pendiente)
-      tasks/                      # (pendiente)
+      areas/                  # catálogo fijo: repositorio + AreaPicker (✅)
+      paints/                  # repositorio + tipos + formulario (✅)
+      materials/                # (pendiente)
+      standardMeasures/          # (pendiente)
+      fieldNotes/                 # (pendiente)
+      tasks/                       # (pendiente)
     components/              # UI compartida: Button, Card, TextField,
                               # StatusBadge, ScreenContainer
     services/                 # wrappers de APIs nativas:

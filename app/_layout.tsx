@@ -49,7 +49,19 @@ export default function RootLayout() {
           name="clients/new"
           options={{ title: "Nuevo cliente", presentation: "modal" }}
         />
-        <Stack.Screen name="clients/[id]" options={{ title: "Cliente" }} />
+        <Stack.Screen name="clients/[id]/index" options={{ title: "Cliente" }} />
+        <Stack.Screen
+          name="clients/[id]/paints/index"
+          options={{ title: "Pinturas" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/paints/new"
+          options={{ title: "Nueva pintura", presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/paints/[paintId]"
+          options={{ title: "Pintura" }}
+        />
       </Stack>
     </>
   );
