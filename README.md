@@ -35,16 +35,18 @@ Los 6 módulos del pedido original están construidos:
   detalle. Filtro por tipo.
 - **Notas de campo**: foto, video, nota de voz (con transcripción
   automática *on-device*, mejor esfuerzo) o texto — reproducibles desde la
-  ficha de la nota.
+  ficha de la nota, con botón para guardar fotos/videos también en la
+  galería del teléfono.
 - **Pendientes**: título, prioridad, fecha opcional con recordatorio real
-  en el calendario nativo del teléfono. Marcar como hecho, archivar.
+  en el calendario nativo del teléfono **y** notificación local a esa
+  fecha/hora. Marcar como hecho, archivar.
 - **Medidas estándar**: biblioteca de referencia fija y buscable (alturas
   y distancias típicas de diseño de interiores), ~34 medidas con buscador
   por palabra clave, accesible desde la lista de clientes.
 
 Ver el detalle completo de la estructura de carpetas, el modelo de datos
-SQLite, cómo funciona la grabación/transcripción de notas de voz, y qué
-falta, en [`PROPUESTA.md`](./PROPUESTA.md).
+SQLite, y cómo funciona la grabación/transcripción de notas de voz en
+[`PROPUESTA.md`](./PROPUESTA.md).
 
 ## Diseño visual
 

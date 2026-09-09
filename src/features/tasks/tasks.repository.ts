@@ -5,6 +5,10 @@ import {
   deleteCalendarEvent,
   updateCalendarEvent,
 } from "@/services/calendar";
+import {
+  cancelTaskNotification,
+  scheduleTaskNotification,
+} from "@/services/notifications";
 
 import type { Task, TaskInput, TaskPriority } from "./types";
 
@@ -19,6 +23,7 @@ type TaskRow = {
   done_at: string | null;
   archived: number;
   calendar_event_id: string | null;
+  notification_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -35,6 +40,7 @@ function toTask(row: TaskRow): Task {
     doneAt: row.done_at,
     archived: row.archived === 1,
     calendarEventId: row.calendar_event_id,
+    notificationId: row.notification_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -83,11 +89,19 @@ export async function createTask(
       })
     : null;
 
+  const notificationId = input.dueDate
+    ? await scheduleTaskNotification(
+        input.title,
+        input.description ?? null,
+        new Date(input.dueDate)
+      )
+    : null;
+
   await db.runAsync(
     `INSERT INTO tasks
       (id, client_id, title, description, priority, due_date, done, done_at,
-       archived, calendar_event_id, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, 0, NULL, 0, ?, ?, ?)`,
+       archived, calendar_event_id, notification_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, 0, NULL, 0, ?, ?, ?, ?)`,
     id,
     clientId,
     input.title,
@@ -95,6 +109,7 @@ export async function createTask(
     input.priority,
     input.dueDate ?? null,
     calendarEventId,
+    notificationId,
     now,
     now
   );
@@ -129,17 +144,31 @@ export async function updateTask(id: string, input: TaskInput): Promise<Task> {
     calendarEventId = null;
   }
 
+  // Las notificaciones no se pueden "editar" — se cancela la anterior y,
+  // si sigue habiendo fecha, se programa una nueva.
+  if (existing.notificationId) {
+    await cancelTaskNotification(existing.notificationId);
+  }
+  const notificationId = input.dueDate
+    ? await scheduleTaskNotification(
+        input.title,
+        input.description ?? null,
+        new Date(input.dueDate)
+      )
+    : null;
+
   const now = new Date().toISOString();
   await db.runAsync(
     `UPDATE tasks SET
        title = ?, description = ?, priority = ?, due_date = ?,
-       calendar_event_id = ?, updated_at = ?
+       calendar_event_id = ?, notification_id = ?, updated_at = ?
      WHERE id = ?`,
     input.title,
     input.description ?? null,
     input.priority,
     input.dueDate ?? null,
     calendarEventId,
+    notificationId,
     now,
     id
   );
@@ -152,6 +181,19 @@ export async function updateTask(id: string, input: TaskInput): Promise<Task> {
 export async function setTaskDone(id: string, done: boolean): Promise<void> {
   const db = await getReadyDb();
   const now = new Date().toISOString();
+
+  // Si ya se hizo, no tiene sentido seguir recordándolo.
+  if (done) {
+    const existing = await getTask(id);
+    if (existing?.notificationId) {
+      await cancelTaskNotification(existing.notificationId);
+      await db.runAsync(
+        "UPDATE tasks SET notification_id = NULL WHERE id = ?",
+        id
+      );
+    }
+  }
+
   await db.runAsync(
     "UPDATE tasks SET done = ?, done_at = ?, updated_at = ? WHERE id = ?",
     done ? 1 : 0,
@@ -180,6 +222,9 @@ export async function deleteTask(id: string): Promise<void> {
   const existing = await getTask(id);
   if (existing?.calendarEventId) {
     await deleteCalendarEvent(existing.calendarEventId);
+  }
+  if (existing?.notificationId) {
+    await cancelTaskNotification(existing.notificationId);
   }
   await db.runAsync("DELETE FROM tasks WHERE id = ?", id);
 }

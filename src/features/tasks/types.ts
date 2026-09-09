@@ -19,6 +19,7 @@ export type Task = {
   doneAt: string | null;
   archived: boolean;
   calendarEventId: string | null;
+  notificationId: string | null;
   createdAt: string;
   updatedAt: string;
 };

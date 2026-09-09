@@ -117,6 +117,7 @@ export default function TasksListScreen() {
                   <Text style={styles.metaText}>
                     {TASK_PRIORITY_LABEL[item.priority]}
                     {item.dueDate ? ` · ${formatDueDate(item.dueDate)}` : ""}
+                    {item.notificationId ? " 🔔" : ""}
                   </Text>
                 </View>
               </Pressable>

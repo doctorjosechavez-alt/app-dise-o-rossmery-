@@ -5,6 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 
 import { initDb } from "@/db/client";
+import { configureNotifications } from "@/services/notifications";
 import { colors, fontAssets, typography } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -15,6 +16,7 @@ export default function RootLayout() {
   const [dbError, setDbError] = useState<Error | null>(null);
 
   useEffect(() => {
+    configureNotifications();
     initDb()
       .then(() => setDbReady(true))
       .catch((err) => setDbError(err instanceof Error ? err : new Error(String(err))));

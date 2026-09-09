@@ -125,6 +125,20 @@ export async function updateFieldNoteDetails(
   return updated;
 }
 
+export async function updateFieldNoteMediaLibraryId(
+  id: string,
+  mediaLibraryId: string
+): Promise<void> {
+  const db = await getReadyDb();
+  const now = new Date().toISOString();
+  await db.runAsync(
+    `UPDATE field_notes SET media_library_id = ?, updated_at = ? WHERE id = ?`,
+    mediaLibraryId,
+    now,
+    id
+  );
+}
+
 export async function updateFieldNoteTranscript(
   id: string,
   transcript: string | null,

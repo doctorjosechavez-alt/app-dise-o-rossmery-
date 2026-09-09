@@ -11,9 +11,11 @@ import {
   deleteFieldNote,
   getFieldNote,
   updateFieldNoteDetails,
+  updateFieldNoteMediaLibraryId,
 } from "@/features/fieldNotes/fieldNotes.repository";
 import { FIELD_NOTE_TYPE_LABEL } from "@/features/fieldNotes/types";
 import type { FieldNote } from "@/features/fieldNotes/types";
+import { saveToGallery } from "@/services/fileStorage";
 import { colors, radius, spacing, typography } from "@/theme";
 
 function formatDate(iso: string): string {
@@ -75,6 +77,7 @@ export default function FieldNoteDetailScreen() {
   const [areaId, setAreaId] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
+  const [savingToGallery, setSavingToGallery] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -104,6 +107,25 @@ export default function FieldNoteDetailScreen() {
       setNote(updated);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveToGallery = async () => {
+    if (!note?.fileUri || savingToGallery) return;
+    setSavingToGallery(true);
+    try {
+      const mediaLibraryId = await saveToGallery(note.fileUri);
+      if (!mediaLibraryId) {
+        Alert.alert(
+          "Permiso denegado",
+          "Para guardar en la galería, da permiso de fotos en Ajustes."
+        );
+        return;
+      }
+      await updateFieldNoteMediaLibraryId(note.id, mediaLibraryId);
+      setNote({ ...note, mediaLibraryId });
+    } finally {
+      setSavingToGallery(false);
     }
   };
 
@@ -149,6 +171,19 @@ export default function FieldNoteDetailScreen() {
 
         {note.type === "voz" && note.fileUri ? (
           <AudioPlayer uri={note.fileUri} />
+        ) : null}
+
+        {(note.type === "foto" || note.type === "video") && note.fileUri ? (
+          note.mediaLibraryId ? (
+            <Text style={styles.savedToGallery}>✓ Guardado en la galería</Text>
+          ) : (
+            <Button
+              label="Guardar en galería"
+              variant="secondary"
+              onPress={handleSaveToGallery}
+              loading={savingToGallery}
+            />
+          )
         ) : null}
 
         {note.type === "voz" ? (
@@ -229,6 +264,11 @@ const styles = StyleSheet.create({
     fontFamily: typography.bodyBold,
     fontSize: 16,
     color: colors.background,
+  },
+  savedToGallery: {
+    fontFamily: typography.bodyBold,
+    fontSize: 14,
+    color: "#4B7B4E",
   },
   transcriptBox: {
     gap: spacing.xs,

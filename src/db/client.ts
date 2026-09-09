@@ -1,6 +1,7 @@
 import * as SQLite from "expo-sqlite";
 
 import { MIGRATION_001_INIT } from "./migrations/001_init";
+import { MIGRATION_002_ADD_TASK_NOTIFICATIONS } from "./migrations/002_add_task_notifications";
 import { AREAS_SEED } from "./seed/areas";
 import { STANDARD_MEASURES_SEED } from "./seed/standardMeasures";
 import { newId } from "./uuid";
@@ -28,6 +29,10 @@ async function getDb(): Promise<SQLite.SQLiteDatabase> {
 // aplicada en un dispositivo real.
 const MIGRATIONS: { id: string; sql: string }[] = [
   { id: "001_init", sql: MIGRATION_001_INIT },
+  {
+    id: "002_add_task_notifications",
+    sql: MIGRATION_002_ADD_TASK_NOTIFICATIONS,
+  },
 ];
 
 async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {

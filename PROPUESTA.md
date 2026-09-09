@@ -13,8 +13,14 @@ estándar (biblioteca poblada + buscador). Cada uno con listar, crear,
 ver/editar y eliminar donde aplica.
 
 Verificado de verdad, no solo escrito: `tsc` y `eslint` limpios, y el
-bundle completo de Metro exporta sin errores — **924 módulos**, incluyendo
-`expo-speech-recognition` y `@react-native-community/datetimepicker`.
+bundle completo de Metro exporta sin errores — **1059 módulos**, incluyendo
+`expo-speech-recognition`, `@react-native-community/datetimepicker` y
+`expo-notifications`.
+
+Además, ya agregados: botón para guardar fotos/videos de notas de campo
+en la galería, y notificaciones locales para pendientes con fecha. Los
+catálogos de `areas.ts` y `standardMeasures.ts` quedaron confirmados sin
+cambios.
 
 - Navegación con expo-router (`app/`), con la ficha de cada cliente como
   "hub" hacia sus 4 módulos (con conteo real de cada uno).
@@ -65,20 +71,23 @@ menos probado por el propio Expo).
    automática) o texto. Ver detalle de la arquitectura de grabación más
    abajo.
 5. **Pendientes** — título, detalle, prioridad (alta/media/baja), fecha
-   opcional. Al ponerle fecha, se crea un evento real en el calendario
-   nativo del teléfono (Android: en un calendario local llamado "Estudio
-   de Obra"; iOS: en el calendario por defecto). Marcar como hecho las deja
-   abajo de la lista; se pueden archivar.
+   opcional. Al ponerle fecha pasan dos cosas: se crea un evento real en
+   el calendario nativo del teléfono (Android: en un calendario local
+   llamado "Estudio de Obra"; iOS: en el calendario por defecto) **y** se
+   programa una notificación local para esa fecha/hora (🔔 junto al
+   pendiente en la lista cuando la tiene). Si lo marcas como hecho antes
+   de la fecha, la notificación se cancela sola — no te va a recordar algo
+   que ya hiciste. Marcar como hecho los deja abajo de la lista; se pueden
+   archivar.
 6. **Medidas estándar** — ~34 medidas de referencia (tomacorrientes,
    mesones, lavamanos, barras de cortina, lámparas, manijas, clósets,
    muebles…) con buscador por palabra clave (`app/measures.tsx`, acceso
    desde la lista de clientes). Búsqueda sin distinguir acentos ("meson"
    encuentra "mesón"). No editable desde la app, como pediste.
 
-## Cómo funciona la grabación de notas de voz (lo más delicado de la app)
+## Cómo funciona la grabación de notas de voz
 
-Esto es lo único de la app que no pude probar en un teléfono real desde
-aquí — vale la pena que lo pruebes temprano. Así quedó diseñado:
+Es la parte más delicada de la app técnicamente — así quedó diseñado:
 
 - **Grabar SIEMPRE funciona**, tenga o no el teléfono soporte de
   transcripción — eso era un requisito explícito tuyo y no quise
@@ -98,7 +107,19 @@ aquí — vale la pena que lo pruebes temprano. Así quedó diseñado:
   offline, y se reproduce directo desde la ficha de la nota.
 - **Fotos y video**: se capturan con una pantalla de cámara propia
   (`expo-camera`, `app/clients/[id]/notes/camera.tsx`) y se guardan
-  también en el almacenamiento propio de la app.
+  también en el almacenamiento propio de la app. Desde la ficha de la
+  nota hay un botón "Guardar en galería" para copiarlas también a Fotos
+  del teléfono (útil para compartirlas directo con un contratista) — pide
+  el permiso de galería solo cuando lo tocas, no antes.
+
+## Notificaciones para pendientes
+
+Además del evento en el calendario, cada pendiente con fecha programa una
+notificación local (`src/services/notifications.ts`, `expo-notifications`)
+que se dispara en el propio teléfono a la fecha/hora exacta — no depende
+de internet ni de un servidor. Si cambias la fecha del pendiente, la
+notificación se reprograma; si le quitas la fecha, se cancela; si lo
+marcas como hecho, también se cancela sola; si lo eliminas, igual.
 
 ## Estructura de carpetas
 
@@ -134,6 +155,7 @@ aquí — vale la pena que lo pruebes temprano. Así quedó diseñado:
     db/
       migrations/
         001_init.ts        # esquema completo, ver abajo
+        002_add_task_notifications.ts
       seed/
         areas.ts           # catálogo fijo de áreas
         standardMeasures.ts # catálogo fijo de medidas estándar
@@ -147,6 +169,7 @@ aquí — vale la pena que lo pruebes temprano. Así quedó diseñado:
                               # StatusBadge, ScreenContainer
     services/                 # wrappers de APIs nativas:
                                #   calendar.ts (expo-calendar)
+                               #   notifications.ts (expo-notifications)
                                #   fileStorage.ts (expo-file-system /
                                #                    expo-media-library)
     hooks/
@@ -187,8 +210,10 @@ o envuelve ahí adentro y las pantallas no cambian.
    opcional si además se copia a la galería, `transcript` +
    `transcript_status`, descripción corta, fecha del recorrido.
 7. **`tasks`** — pendientes: prioridad (alta/media/baja), fecha,
-   `done`/`archived`, y `calendar_event_id` para poder editar o borrar el
-   evento que se creó en el calendario nativo del teléfono.
+   `done`/`archived`, `calendar_event_id` para poder editar o borrar el
+   evento del calendario nativo, y `notification_id` (agregado en
+   `002_add_task_notifications.ts`) para poder cancelar/reprogramar la
+   notificación local.
 
 IDs son `TEXT` (UUID v4, generado con `expo-crypto`), no autoincrement —
 pensando en que el día de mañana se sincronice entre dispositivos, un ID
@@ -197,28 +222,19 @@ generado en el teléfono no choca con el de otro.
 ## Otras notas de viabilidad técnica
 
 - **Fotos/videos:** se guardan primero en el almacenamiento propio de la
-  app (`expo-file-system`, funciona 100% offline). El servicio
-  `src/services/fileStorage.ts` también tiene `saveToGallery()` para
-  copiarlos a la galería del teléfono si se quiere habilitar ese botón más
-  adelante (para compartir directo desde Fotos con un contratista) — no
-  está conectado a la UI todavía, para no pedir el permiso de galería sin
-  que la usuaria lo use.
+  app (`expo-file-system`, funciona 100% offline); opcionalmente también
+  en la galería (ver arriba).
 - **Calendario nativo:** `expo-calendar` crea/edita/borra eventos reales
   (no un link). En Android crea un calendario local dedicado "Estudio de
   Obra" la primera vez que se usa, para no mezclar con el calendario
   personal.
+- **Notificaciones:** son locales (programadas en el teléfono), no push
+  de servidor — no necesitan backend ni cuenta, coherente con que toda la
+  app es offline-first.
 
 ## Siguiente paso
 
-Los 6 módulos del pedido original ya están completos. Lo que queda es
-afinar, no construir:
-
-1. Que confirmes/ajustes la lista de `standardMeasures.ts` y el catálogo
-   de `areas.ts`.
-2. Probar en un teléfono real el flujo de notas de voz (grabar +
-   transcripción) — es la parte más delicada y la que no pude probar desde
-   aquí.
-3. Ideas para después, si las quieres: botón "Guardar en galería" en las
-   notas de foto/video (el servicio ya existe, `saveToGallery()`, solo
-   falta el botón), y notificaciones push para pendientes con fecha
-   próxima (hoy dependes de revisar la lista).
+Los 6 módulos del pedido original están completos, con catálogos
+confirmados, guardado en galería y notificaciones de pendientes ya
+agregados. No queda ningún pendiente conocido de este pedido — el resto
+es lo que surja cuando la uses en obra.
