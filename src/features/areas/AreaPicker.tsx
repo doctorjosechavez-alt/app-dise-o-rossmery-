@@ -8,10 +8,13 @@ import type { Area } from "./types";
 
 type AreaPickerProps = {
   value: string | null;
-  onChange: (areaId: string) => void;
+  onChange: (areaId: string | null) => void;
+  // Muestra un chip "Sin área" que selecciona null — para notas que no
+  // son de un área específica (ej. una nota de voz general del proyecto).
+  allowNone?: boolean;
 };
 
-export function AreaPicker({ value, onChange }: AreaPickerProps) {
+export function AreaPicker({ value, onChange, allowNone }: AreaPickerProps) {
   const [areas, setAreas] = useState<Area[] | null>(null);
 
   useEffect(() => {
@@ -24,6 +27,16 @@ export function AreaPicker({ value, onChange }: AreaPickerProps) {
 
   return (
     <View style={styles.row}>
+      {allowNone ? (
+        <Pressable
+          onPress={() => onChange(null)}
+          style={[styles.pill, value === null && styles.pillSelected]}
+        >
+          <Text style={[styles.label, value === null && styles.labelSelected]}>
+            Sin área
+          </Text>
+        </Pressable>
+      ) : null}
       {areas.map((area) => {
         const selected = area.id === value;
         return (

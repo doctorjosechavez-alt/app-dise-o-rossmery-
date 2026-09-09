@@ -62,6 +62,54 @@ export default function RootLayout() {
           name="clients/[id]/paints/[paintId]"
           options={{ title: "Pintura" }}
         />
+        <Stack.Screen
+          name="clients/[id]/materials/index"
+          options={{ title: "Materiales y acabados" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/materials/new"
+          options={{ title: "Nuevo material", presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/materials/[materialId]"
+          options={{ title: "Material" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/tasks/index"
+          options={{ title: "Pendientes" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/tasks/new"
+          options={{ title: "Nuevo pendiente", presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/tasks/[taskId]"
+          options={{ title: "Pendiente" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/notes/index"
+          options={{ title: "Notas de campo" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/notes/new"
+          options={{ title: "Nueva nota", presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/notes/camera"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="clients/[id]/notes/record"
+          options={{ title: "Nota de voz" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/notes/save"
+          options={{ title: "Guardar nota" }}
+        />
+        <Stack.Screen
+          name="clients/[id]/notes/[noteId]"
+          options={{ title: "Nota de campo" }}
+        />
       </Stack>
     </>
   );

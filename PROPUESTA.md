@@ -6,51 +6,105 @@ modelo de datos y qué hay construido hasta ahora.
 
 ## Estado actual
 
-Ya está construido y probado (compila con `tsc`, pasa `eslint`, y el bundle
-completo de Metro exporta sin errores — 849 módulos, incluyendo fuentes):
+**Los 6 módulos están construidos**: Clientes, Pinturas, Materiales y
+acabados, Notas de campo (foto/video/voz con transcripción/texto),
+Pendientes (con calendario nativo), y la biblioteca de Medidas estándar
+(poblada, consultable desde `standard_measures` — falta la pantalla de
+búsqueda, ver "Siguiente paso"). Cada uno con listar, crear, ver/editar y
+eliminar donde aplica.
 
-- Navegación con expo-router (`app/`).
+Verificado de verdad, no solo escrito: `tsc` y `eslint` limpios, y el
+bundle completo de Metro exporta sin errores — **922 módulos**, incluyendo
+`expo-speech-recognition` y `@react-native-community/datetimepicker`.
+
+- Navegación con expo-router (`app/`), con la ficha de cada cliente como
+  "hub" hacia sus 4 módulos (con conteo real de cada uno).
 - Fuentes reales Fraunces + Source Serif 4 (instancias estáticas generadas
   a partir de las variables de Google Fonts, licencia OFL incluida en
   `assets/fonts/licenses/`).
 - Base de datos: migraciones y seeds (áreas + medidas estándar) corriendo
   de verdad al iniciar la app (`app/_layout.tsx` → `initDb()`).
-- **Módulo de Clientes completo**: listar, crear, ver ficha, editar,
-  eliminar.
-- **Módulo de Pinturas completo**: listar por cliente (con filtro por
-  área), crear, ver/editar, eliminar. Selección de área con el catálogo
-  fijo (`AreaPicker`, compartido con futuros módulos). La ficha de cliente
-  muestra el conteo real de pinturas y navega a la lista.
-- Los otros 3 espacios ("Materiales y acabados", "Notas de campo",
-  "Pendientes") siguen marcados "Próximamente" en la ficha de cliente —
-  son el siguiente paso.
 - Kit de componentes compartidos (`src/components/`): botones grandes,
   campos de texto, cards, badge de estado — con la paleta y tipografía ya
   aplicadas.
 
-**Para probarla:** `npm install && npx expo start`.
-Usa Node 18 o 20 (Expo recomienda LTS activo; Node 22 funciona igual una
-vez corregido el detalle de `app.json` de abajo, pero LTS es lo más
-probado).
+## ⚠️ Importante: esta app ya NO se puede probar con Expo Go
 
-**Nota técnica ya resuelta:** `expo-sqlite` no tiene config plugin propio
-(no necesita configuración nativa además de los permisos ya declarados),
-así que no debe listarse en `app.json → plugins` — tenerlo ahí rompía la
-resolución de módulos de la CLI de Expo. Ya está corregido.
+Con el módulo de transcripción de voz (`expo-speech-recognition`) la app
+pasó a depender de un módulo nativo de terceros que **no viene incluido
+en la app Expo Go**. A partir de ahora hace falta un *development build*
+propio — no es mucho más complicado, pero es un paso extra la primera vez:
 
-## Siguiente paso
+```bash
+npm install
+npx expo prebuild        # genera las carpetas ios/ y android/
+npx expo run:ios         # o: npx expo run:android
+```
 
-Construir los 3 módulos restantes (Materiales, Notas de campo,
-Pendientes) con el mismo patrón que Clientes/Pinturas: `types.ts` +
-`*.repository.ts` (+ un picker compartido si aplica) + pantallas en
-`app/clients/[id]/...`, y reemplazar los bloques "Próximamente" de la
-ficha de cliente por accesos reales.
+Esto instala una app propia (con ícono "Estudio de Obra") en el
+simulador o en tu teléfono conectado por cable. Después del primer build,
+`npx expo start` funciona normal para seguir desarrollando (recarga en
+caliente) — el paso de `run:ios`/`run:android` solo hace falta de nuevo si
+se agrega otro módulo nativo nuevo. También se puede generar el build en
+la nube con **EAS Build** (`eas build --profile development`) si no
+quieres compilar en tu máquina.
+
+Usa Node 18 o 20 para los comandos de Expo (Node 22 funciona pero es
+menos probado por el propio Expo).
+
+## Los 6 módulos
+
+1. **Clientes** — ficha por cliente (nombre, dirección de obra, contacto,
+   notas, estado del proyecto). Punto de entrada a todo lo demás.
+2. **Pinturas** — por cliente y área (catálogo fijo, no texto libre):
+   marca, código de color, nombre, acabado, nota. Filtro por área en la
+   lista.
+3. **Materiales y acabados** — por cliente: tipo (tela, piso, madera,
+   mármol/piedra, mueble, otro), referencia, proveedor, detalle libre.
+   Filtro por tipo en la lista.
+4. **Notas de campo** — foto, video, nota de voz (con transcripción
+   automática) o texto. Ver detalle de la arquitectura de grabación más
+   abajo.
+5. **Pendientes** — título, detalle, prioridad (alta/media/baja), fecha
+   opcional. Al ponerle fecha, se crea un evento real en el calendario
+   nativo del teléfono (Android: en un calendario local llamado "Estudio
+   de Obra"; iOS: en el calendario por defecto). Marcar como hecho las deja
+   abajo de la lista; se pueden archivar.
+6. **Medidas estándar** — ~34 medidas de referencia ya pobladas en la base
+   de datos (tomacorrientes, mesones, lavamanos, barras de cortina,
+   lámparas, manijas, clósets, muebles…). Falta la pantalla de búsqueda —
+   ver "Siguiente paso".
+
+## Cómo funciona la grabación de notas de voz (lo más delicado de la app)
+
+Esto es lo único de la app que no pude probar en un teléfono real desde
+aquí — vale la pena que lo pruebes temprano. Así quedó diseñado:
+
+- **Grabar SIEMPRE funciona**, tenga o no el teléfono soporte de
+  transcripción — eso era un requisito explícito tuyo y no quise
+  arriesgarlo.
+- Al tocar "Grabar" (`src/features/fieldNotes/useVoiceRecorder.ts`), la
+  app revisa si el teléfono soporta reconocimiento de voz **on-device**.
+  - **Si sí**: graba y transcribe al mismo tiempo con
+    `expo-speech-recognition` (un solo motor nativo hace ambas cosas — así
+    se evita cualquier problema de formato de audio incompatible entre
+    "grabar" y "transcribir" por separado). Se ve el texto transcribiéndose
+    en vivo mientras hablas.
+  - **Si no**: graba con `expo-av` normal, sin transcripción
+    (`transcript_status = 'unavailable'`) — la ficha de la nota muestra el
+    campo de descripción manual como respaldo.
+- El archivo de audio queda guardado en el almacenamiento propio de la
+  app (`FileSystem.documentDirectory/field-notes/`), funciona 100%
+  offline, y se reproduce directo desde la ficha de la nota.
+- **Fotos y video**: se capturan con una pantalla de cámara propia
+  (`expo-camera`, `app/clients/[id]/notes/camera.tsx`) y se guardan
+  también en el almacenamiento propio de la app.
 
 ## Estructura de carpetas
 
 ```
 .
-  app.json                # config de Expo (permisos cámara/mic/calendario)
+  app.json                # config de Expo (permisos + plugins nativos)
   package.json
   tsconfig.json
   babel.config.js
@@ -61,11 +115,17 @@ ficha de cliente por accesos reales.
     clients/
       new.tsx              # crear cliente (modal)
       [id]/
-        index.tsx           # ficha de cliente (ver/editar/eliminar)
-        paints/
-          index.tsx          # lista de pinturas (filtro por área)
-          new.tsx             # crear pintura (modal)
-          [paintId].tsx        # ver/editar/eliminar pintura
+        index.tsx           # ficha de cliente — hub hacia los 4 módulos
+        paints/              # lista (filtro por área) · new · [paintId]
+        materials/            # lista (filtro por tipo) · new · [materialId]
+        tasks/                  # lista (con archivadas) · new · [taskId]
+        notes/
+          index.tsx            # lista (filtro por tipo)
+          new.tsx               # elegir: foto / video / voz / texto
+          camera.tsx            # captura de foto/video (pantalla completa)
+          record.tsx            # grabación de voz (con transcripción en vivo)
+          save.tsx              # completar área + descripción y guardar
+          [noteId].tsx           # ver/reproducir/editar/eliminar
   assets/
     fonts/                 # Fraunces + Source Serif 4 (.ttf reales) + licencias
     images/
@@ -78,33 +138,24 @@ ficha de cliente por accesos reales.
         standardMeasures.ts # catálogo fijo de medidas estándar
       client.ts             # apertura de la DB + runner de migraciones/seeds
       uuid.ts
-    theme/
-      colors.ts             # #FAF7F1, #2A2823, #A85C3B, #34556B
-      typography.ts         # Fraunces (títulos) / Source Serif 4 (cuerpo)
-      spacing.ts
-    features/                # un módulo por dominio, cada uno con su
-      clients/               # repositorio de datos + tipos + formulario (✅)
-      areas/                  # catálogo fijo: repositorio + AreaPicker (✅)
-      paints/                  # repositorio + tipos + formulario (✅)
-      materials/                # (pendiente)
-      standardMeasures/          # (pendiente)
-      fieldNotes/                 # (pendiente)
-      tasks/                       # (pendiente)
+    theme/                  # colores, tipografía, espaciado
+    features/                # un módulo por dominio
+      clients/, areas/, paints/, materials/, tasks/, fieldNotes/
     components/              # UI compartida: Button, Card, TextField,
                               # StatusBadge, ScreenContainer
     services/                 # wrappers de APIs nativas:
-                               #   transcription.ts (contrato ya escrito)
-                               #   camera.ts, audio.ts, calendar.ts,
-                               #   fileStorage.ts (pendientes)
+                               #   calendar.ts (expo-calendar)
+                               #   fileStorage.ts (expo-file-system /
+                               #                    expo-media-library)
     hooks/
     utils/
 ```
 
 **Por qué así:** cada módulo de negocio (`features/*`) es dueño de su
-repositorio de datos, tipos y pantallas — así se puede tocar "Pendientes"
-sin arriesgar "Pinturas". `db/` es la única capa que sabe que existe SQLite;
-si más adelante se conecta Supabase/Firebase, se reemplaza o envuelve ahí
-adentro y las pantallas no cambian.
+repositorio de datos, tipos y formularios — así se puede tocar
+"Pendientes" sin arriesgar "Pinturas". `db/` es la única capa que sabe que
+existe SQLite; si más adelante se conecta Supabase/Firebase, se reemplaza
+o envuelve ahí adentro y las pantallas no cambian.
 
 ## Modelo de datos (SQLite — `src/db/migrations/001_init.ts`)
 
@@ -121,19 +172,18 @@ adentro y las pantallas no cambian.
    color, nombre de color, acabado, nota.
 4. **`standard_measures`** — biblioteca fija de ~34 medidas estándar
    (categoría, ítem, valor en texto tipo "105–110 cm", más min/max
-   numérico opcional para poder ordenar), ya poblada en
-   `src/db/seed/standardMeasures.ts`. Son valores de referencia general de
-   la industria, no normativa oficial de ningún país — conviene que los
-   revises y me digas qué agregar, quitar o ajustar.
+   numérico opcional para poder ordenar), ya poblada. Son valores de
+   referencia general de la industria, no normativa oficial de ningún
+   país — conviene que los revises y me digas qué agregar, quitar o
+   ajustar.
 5. **`materials`** — materiales/acabados por cliente: tipo (tela, piso,
    madera, mármol/piedra, mueble, otro), referencia, proveedor, detalle
    libre.
 6. **`field_notes`** — notas de campo: tipo (foto/video/voz/texto),
    `area_id` (opcional — una nota puede ser general), `file_uri` (archivo
-   guardado en el almacenamiento propio de la app, para que funcione sin
-   conexión), `media_library_id` opcional si además se copia a la galería,
-   `transcript` + `transcript_status` (ver transcripción abajo),
-   descripción corta, fecha del recorrido.
+   guardado en el almacenamiento propio de la app), `media_library_id`
+   opcional si además se copia a la galería, `transcript` +
+   `transcript_status`, descripción corta, fecha del recorrido.
 7. **`tasks`** — pendientes: prioridad (alta/media/baja), fecha,
    `done`/`archived`, y `calendar_event_id` para poder editar o borrar el
    evento que se creó en el calendario nativo del teléfono.
@@ -142,46 +192,30 @@ IDs son `TEXT` (UUID v4, generado con `expo-crypto`), no autoincrement —
 pensando en que el día de mañana se sincronice entre dispositivos, un ID
 generado en el teléfono no choca con el de otro.
 
-## Transcripción automática de voz — cómo va a funcionar
-
-Se usa reconocimiento de voz **en el propio dispositivo** (librería
-`expo-speech-recognition`), no un servicio en la nube — así se mantiene
-offline:
-
-- **iPhone:** usa el dictado nativo de iOS en modo *on-device*. Funciona
-  sin internet si el idioma español está descargado en Ajustes (lo cual es
-  el caso por defecto en la inmensa mayoría de iPhones en español). Calidad
-  buena para notas cortas tipo "medida muro cocina, 3.20 metros".
-- **Android:** depende de si el teléfono tiene instalado el paquete de
-  reconocimiento de voz offline para español (se configura una vez en
-  Ajustes del sistema). Si no lo tiene y no hay señal, la transcripción
-  simplemente no se puede hacer en ese momento.
-
-Por eso el flujo es "mejor esfuerzo, nunca bloqueante":
-
-1. Se graba la nota de voz normalmente y se guarda de inmediato
-   (`transcript_status = 'pending'`) — grabar nunca depende de la
-   transcripción.
-2. En segundo plano se intenta transcribir on-device.
-3. Si funciona → el texto queda guardado y es buscable
-   (`transcript_status = 'done'`).
-4. Si el teléfono no soporta reconocimiento offline en ese momento → queda
-   `transcript_status = 'unavailable'` y la ficha de la nota simplemente
-   muestra el campo de descripción manual como respaldo — nunca deja a la
-   usuaria bloqueada en obra sin señal.
-
-El contrato de esta función ya está escrito en
-`src/services/transcription.ts`; la implementación con la librería nativa
-se conecta junto con la pantalla de notas de campo (siguiente módulo).
-
 ## Otras notas de viabilidad técnica
 
-- **Fotos/videos:** se graban con `expo-camera` y se guardan primero en el
-  almacenamiento propio de la app (`expo-file-system`, funciona 100%
-  offline). Opcionalmente, y solo si el teléfono tiene el permiso dado, se
-  copian también a la galería (`expo-media-library`) para que la usuaria
-  pueda compartirlos directo desde Fotos con un contratista.
-- **Calendario nativo:** `expo-calendar` sí permite crear/editar/borrar
-  eventos reales en el calendario del teléfono (no un link). Se guarda el
-  `calendar_event_id` en `tasks` para poder mantenerlo sincronizado si la
-  fecha del pendiente cambia.
+- **Fotos/videos:** se guardan primero en el almacenamiento propio de la
+  app (`expo-file-system`, funciona 100% offline). El servicio
+  `src/services/fileStorage.ts` también tiene `saveToGallery()` para
+  copiarlos a la galería del teléfono si se quiere habilitar ese botón más
+  adelante (para compartir directo desde Fotos con un contratista) — no
+  está conectado a la UI todavía, para no pedir el permiso de galería sin
+  que la usuaria lo use.
+- **Calendario nativo:** `expo-calendar` crea/edita/borra eventos reales
+  (no un link). En Android crea un calendario local dedicado "Estudio de
+  Obra" la primera vez que se usa, para no mezclar con el calendario
+  personal.
+
+## Siguiente paso
+
+Lo único que falta para que los 6 módulos del pedido original estén 100%
+completos:
+
+1. **Pantalla de búsqueda de Medidas estándar** — la tabla ya existe y
+   está poblada; falta la pantalla `app/measures.tsx` (o similar) con un
+   buscador simple por palabra clave sobre categoría/ítem/notas.
+2. Que confirmes/ajustes la lista de `standardMeasures.ts` y el catálogo
+   de `areas.ts`.
+3. Probar en un teléfono real el flujo de notas de voz (grabar +
+   transcripción) — es la parte más delicada y la que no pude probar desde
+   aquí.

@@ -12,28 +12,39 @@ backend ni cuentas.
 
 ```bash
 npm install
-npx expo start
+npx expo prebuild
+npx expo run:ios      # o: npx expo run:android
 ```
 
-Escanea el código QR con la app **Expo Go** en tu teléfono (usa Node 18 o
-20; ver nota en `PROPUESTA.md` si usas Node 22).
+⚠️ Ya **no** se puede probar con la app Expo Go — el módulo de
+transcripción de voz requiere un *development build* propio (ver detalle
+en [`PROPUESTA.md`](./PROPUESTA.md)). Después del primer build, `npx expo
+start` sirve para seguir desarrollando con recarga en caliente. Usa Node
+18 o 20.
 
 ## Qué tiene hasta ahora
 
+Los 6 módulos del pedido original están construidos:
+
 - **Clientes / proyectos**: ficha por cliente (nombre, dirección de obra,
   contacto, notas, estado del proyecto) — listar, crear, ver, editar,
-  eliminar. ✅ Construido.
-- **Pinturas**, **Materiales y acabados**, **Notas de campo** (foto,
-  video, voz con transcripción automática on-device, texto) y
-  **Pendientes** (con recordatorio en el calendario nativo): módulos
-  planeados, con el modelo de datos ya definido — construcción pendiente.
+  eliminar.
+- **Pinturas**: por cliente y área (catálogo fijo) — marca, color,
+  acabado, nota. Filtro por área.
+- **Materiales y acabados**: por cliente — tipo, referencia, proveedor,
+  detalle. Filtro por tipo.
+- **Notas de campo**: foto, video, nota de voz (con transcripción
+  automática *on-device*, mejor esfuerzo) o texto — reproducibles desde la
+  ficha de la nota.
+- **Pendientes**: título, prioridad, fecha opcional con recordatorio real
+  en el calendario nativo del teléfono. Marcar como hecho, archivar.
 - **Medidas estándar**: biblioteca de referencia fija y buscable (alturas
-  y distancias típicas de diseño de interiores), con ~34 medidas ya
-  pobladas.
+  y distancias típicas de diseño de interiores), ~34 medidas ya pobladas
+  en la base de datos (falta la pantalla de búsqueda).
 
 Ver el detalle completo de la estructura de carpetas, el modelo de datos
-SQLite y las notas de viabilidad técnica (transcripción de voz, cámara,
-calendario) en [`PROPUESTA.md`](./PROPUESTA.md).
+SQLite, cómo funciona la grabación/transcripción de notas de voz, y qué
+falta, en [`PROPUESTA.md`](./PROPUESTA.md).
 
 ## Diseño visual
 

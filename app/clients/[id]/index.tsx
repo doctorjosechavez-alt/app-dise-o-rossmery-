@@ -13,30 +13,48 @@ import {
 } from "@/features/clients/clients.repository";
 import { ClientForm } from "@/features/clients/ClientForm";
 import type { Client, ClientInput } from "@/features/clients/types";
+import { listFieldNotesByClient } from "@/features/fieldNotes/fieldNotes.repository";
+import { listMaterialsByClient } from "@/features/materials/materials.repository";
 import { listPaintsByClient } from "@/features/paints/paints.repository";
+import { listTasksByClient } from "@/features/tasks/tasks.repository";
 import { colors, spacing, typography } from "@/theme";
 
-const COMING_SOON_SECTIONS = [
-  { label: "Materiales y acabados", description: "Telas, pisos, madera, mármol…" },
-  { label: "Notas de campo", description: "Foto, video, voz y texto" },
-  { label: "Pendientes", description: "Tareas con recordatorio en calendario" },
-];
+type HubSection = {
+  key: string;
+  label: string;
+  description: string;
+  route: string;
+  count: number;
+  noun: [string, string]; // [singular, plural]
+};
 
 export default function ClientDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [client, setClient] = useState<Client | null>(null);
   const [paintsCount, setPaintsCount] = useState(0);
+  const [materialsCount, setMaterialsCount] = useState(0);
+  const [fieldNotesCount, setFieldNotesCount] = useState(0);
+  const [tasksCount, setTasksCount] = useState(0);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([getClient(id), listPaintsByClient(id)])
-      .then(([clientResult, paints]) => {
+    Promise.all([
+      getClient(id),
+      listPaintsByClient(id),
+      listMaterialsByClient(id),
+      listFieldNotesByClient(id),
+      listTasksByClient(id),
+    ])
+      .then(([clientResult, paints, materials, fieldNotes, tasks]) => {
         setClient(clientResult);
         setPaintsCount(paints.length);
+        setMaterialsCount(materials.length);
+        setFieldNotesCount(fieldNotes.length);
+        setTasksCount(tasks.filter((t) => !t.archived && !t.done).length);
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -97,6 +115,41 @@ export default function ClientDetailScreen() {
     );
   }
 
+  const builtSections: HubSection[] = [
+    {
+      key: "paints",
+      label: "Pinturas",
+      description: "Marca, color y acabado por área",
+      route: `/clients/${id}/paints`,
+      count: paintsCount,
+      noun: ["pintura", "pinturas"],
+    },
+    {
+      key: "materials",
+      label: "Materiales y acabados",
+      description: "Telas, pisos, madera, mármol…",
+      route: `/clients/${id}/materials`,
+      count: materialsCount,
+      noun: ["material", "materiales"],
+    },
+    {
+      key: "fieldNotes",
+      label: "Notas de campo",
+      description: "Foto, video, voz y texto",
+      route: `/clients/${id}/notes`,
+      count: fieldNotesCount,
+      noun: ["nota", "notas"],
+    },
+    {
+      key: "tasks",
+      label: "Pendientes",
+      description: "Tareas con recordatorio en calendario",
+      route: `/clients/${id}/tasks`,
+      count: tasksCount,
+      noun: ["pendiente por hacer", "pendientes por hacer"],
+    },
+  ];
+
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -125,23 +178,19 @@ export default function ClientDetailScreen() {
 
         <Text style={styles.sectionTitle}>De este proyecto</Text>
         <View style={styles.hubList}>
-          <Card
-            onPress={() => router.push(`/clients/${id}/paints`)}
-            style={styles.hubCard}
-          >
-            <Text style={styles.hubLabel}>Pinturas</Text>
-            <Text style={styles.hubDescription}>Marca, color y acabado por área</Text>
-            <Text style={styles.hubCount}>
-              {paintsCount === 0
-                ? "Sin pinturas todavía"
-                : `${paintsCount} ${paintsCount === 1 ? "pintura" : "pinturas"}`}
-            </Text>
-          </Card>
-          {COMING_SOON_SECTIONS.map((section) => (
-            <Card key={section.label} style={styles.hubCard}>
+          {builtSections.map((section) => (
+            <Card
+              key={section.key}
+              onPress={() => router.push(section.route as never)}
+              style={styles.hubCard}
+            >
               <Text style={styles.hubLabel}>{section.label}</Text>
               <Text style={styles.hubDescription}>{section.description}</Text>
-              <Text style={styles.hubComingSoon}>Próximamente</Text>
+              <Text style={styles.hubCount}>
+                {section.count === 0
+                  ? `Sin ${section.noun[1]} todavía`
+                  : `${section.count} ${section.count === 1 ? section.noun[0] : section.noun[1]}`}
+              </Text>
             </Card>
           ))}
         </View>
@@ -213,12 +262,6 @@ const styles = StyleSheet.create({
     fontFamily: typography.body,
     fontSize: 14,
     color: colors.muted,
-  },
-  hubComingSoon: {
-    fontFamily: typography.bodyBold,
-    fontSize: 12,
-    color: colors.blue,
-    marginTop: spacing.xs,
   },
   hubCount: {
     fontFamily: typography.bodyBold,

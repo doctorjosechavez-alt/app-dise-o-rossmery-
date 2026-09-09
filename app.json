@@ -12,7 +12,6 @@
       "supportsTablet": false,
       "infoPlist": {
         "NSCameraUsageDescription": "Se usa la cámara para grabar fotos y videos de la obra.",
-        "NSMicrophoneUsageDescription": "Se usa el micrófono para grabar notas de voz y el audio de los videos.",
         "NSPhotoLibraryAddUsageDescription": "Las fotos y videos de las notas de campo se guardan en tu galería.",
         "NSCalendarsUsageDescription": "Se usa el calendario para agregar recordatorios de tus pendientes."
       }
@@ -35,7 +34,7 @@
       [
         "expo-av",
         {
-          "microphonePermission": "Se usa el micrófono para grabar notas de voz."
+          "microphonePermission": "Se usa el micrófono para grabar notas de voz y el audio de los videos."
         }
       ],
       [
@@ -44,6 +43,13 @@
           "photosPermission": "Las fotos y videos de las notas de campo se guardan en tu galería.",
           "savePhotosPermission": "Las fotos y videos de las notas de campo se guardan en tu galería.",
           "isAccessMediaLocationEnabled": false
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Se usa el micrófono para grabar notas de voz y el audio de los videos.",
+          "speechRecognitionPermission": "Se usa el reconocimiento de voz para transcribir las notas de voz automáticamente."
         }
       ]
     ]
