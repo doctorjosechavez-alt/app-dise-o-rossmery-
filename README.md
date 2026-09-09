@@ -39,8 +39,8 @@ Los 6 módulos del pedido original están construidos:
 - **Pendientes**: título, prioridad, fecha opcional con recordatorio real
   en el calendario nativo del teléfono. Marcar como hecho, archivar.
 - **Medidas estándar**: biblioteca de referencia fija y buscable (alturas
-  y distancias típicas de diseño de interiores), ~34 medidas ya pobladas
-  en la base de datos (falta la pantalla de búsqueda).
+  y distancias típicas de diseño de interiores), ~34 medidas con buscador
+  por palabra clave, accesible desde la lista de clientes.
 
 Ver el detalle completo de la estructura de carpetas, el modelo de datos
 SQLite, cómo funciona la grabación/transcripción de notas de voz, y qué

@@ -49,6 +49,10 @@ export default function RootLayout() {
           name="clients/new"
           options={{ title: "Nuevo cliente", presentation: "modal" }}
         />
+        <Stack.Screen
+          name="measures"
+          options={{ title: "Medidas estándar" }}
+        />
         <Stack.Screen name="clients/[id]/index" options={{ title: "Cliente" }} />
         <Stack.Screen
           name="clients/[id]/paints/index"

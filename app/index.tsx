@@ -61,7 +61,14 @@ export default function ClientsListScreen() {
           </Card>
         )}
       />
-      <Button label="Nuevo cliente" onPress={() => router.push("/clients/new")} />
+      <View style={styles.actions}>
+        <Button label="Nuevo cliente" onPress={() => router.push("/clients/new")} />
+        <Button
+          label="Medidas estándar"
+          variant="secondary"
+          onPress={() => router.push("/measures")}
+        />
+      </View>
     </ScreenContainer>
   );
 }
@@ -71,6 +78,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingBottom: spacing.lg,
     flexGrow: 1,
+  },
+  actions: {
+    gap: spacing.sm,
   },
   card: {
     gap: spacing.xs,

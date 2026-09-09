@@ -6,15 +6,14 @@ modelo de datos y qué hay construido hasta ahora.
 
 ## Estado actual
 
-**Los 6 módulos están construidos**: Clientes, Pinturas, Materiales y
-acabados, Notas de campo (foto/video/voz con transcripción/texto),
-Pendientes (con calendario nativo), y la biblioteca de Medidas estándar
-(poblada, consultable desde `standard_measures` — falta la pantalla de
-búsqueda, ver "Siguiente paso"). Cada uno con listar, crear, ver/editar y
-eliminar donde aplica.
+**Los 6 módulos del pedido original están 100% construidos**: Clientes,
+Pinturas, Materiales y acabados, Notas de campo (foto/video/voz con
+transcripción/texto), Pendientes (con calendario nativo), y Medidas
+estándar (biblioteca poblada + buscador). Cada uno con listar, crear,
+ver/editar y eliminar donde aplica.
 
 Verificado de verdad, no solo escrito: `tsc` y `eslint` limpios, y el
-bundle completo de Metro exporta sin errores — **922 módulos**, incluyendo
+bundle completo de Metro exporta sin errores — **924 módulos**, incluyendo
 `expo-speech-recognition` y `@react-native-community/datetimepicker`.
 
 - Navegación con expo-router (`app/`), con la ficha de cada cliente como
@@ -70,10 +69,11 @@ menos probado por el propio Expo).
    nativo del teléfono (Android: en un calendario local llamado "Estudio
    de Obra"; iOS: en el calendario por defecto). Marcar como hecho las deja
    abajo de la lista; se pueden archivar.
-6. **Medidas estándar** — ~34 medidas de referencia ya pobladas en la base
-   de datos (tomacorrientes, mesones, lavamanos, barras de cortina,
-   lámparas, manijas, clósets, muebles…). Falta la pantalla de búsqueda —
-   ver "Siguiente paso".
+6. **Medidas estándar** — ~34 medidas de referencia (tomacorrientes,
+   mesones, lavamanos, barras de cortina, lámparas, manijas, clósets,
+   muebles…) con buscador por palabra clave (`app/measures.tsx`, acceso
+   desde la lista de clientes). Búsqueda sin distinguir acentos ("meson"
+   encuentra "mesón"). No editable desde la app, como pediste.
 
 ## Cómo funciona la grabación de notas de voz (lo más delicado de la app)
 
@@ -112,6 +112,7 @@ aquí — vale la pena que lo pruebes temprano. Así quedó diseñado:
   app/                     # rutas de expo-router
     _layout.tsx            # carga fuentes + DB, navegación raíz
     index.tsx              # lista de clientes
+    measures.tsx            # buscador de medidas estándar
     clients/
       new.tsx              # crear cliente (modal)
       [id]/
@@ -140,7 +141,8 @@ aquí — vale la pena que lo pruebes temprano. Así quedó diseñado:
       uuid.ts
     theme/                  # colores, tipografía, espaciado
     features/                # un módulo por dominio
-      clients/, areas/, paints/, materials/, tasks/, fieldNotes/
+      clients/, areas/, paints/, materials/, tasks/, fieldNotes/,
+      standardMeasures/
     components/              # UI compartida: Button, Card, TextField,
                               # StatusBadge, ScreenContainer
     services/                 # wrappers de APIs nativas:
@@ -208,14 +210,15 @@ generado en el teléfono no choca con el de otro.
 
 ## Siguiente paso
 
-Lo único que falta para que los 6 módulos del pedido original estén 100%
-completos:
+Los 6 módulos del pedido original ya están completos. Lo que queda es
+afinar, no construir:
 
-1. **Pantalla de búsqueda de Medidas estándar** — la tabla ya existe y
-   está poblada; falta la pantalla `app/measures.tsx` (o similar) con un
-   buscador simple por palabra clave sobre categoría/ítem/notas.
-2. Que confirmes/ajustes la lista de `standardMeasures.ts` y el catálogo
+1. Que confirmes/ajustes la lista de `standardMeasures.ts` y el catálogo
    de `areas.ts`.
-3. Probar en un teléfono real el flujo de notas de voz (grabar +
+2. Probar en un teléfono real el flujo de notas de voz (grabar +
    transcripción) — es la parte más delicada y la que no pude probar desde
    aquí.
+3. Ideas para después, si las quieres: botón "Guardar en galería" en las
+   notas de foto/video (el servicio ya existe, `saveToGallery()`, solo
+   falta el botón), y notificaciones push para pendientes con fecha
+   próxima (hoy dependes de revisar la lista).
