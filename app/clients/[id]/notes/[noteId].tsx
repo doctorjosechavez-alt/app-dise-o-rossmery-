@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Audio, ResizeMode, Video } from "expo-av";
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 import { Button } from "@/components/Button";
 import { ScreenContainer } from "@/components/ScreenContainer";
@@ -28,44 +29,35 @@ function formatDate(iso: string): string {
 }
 
 function AudioPlayer({ uri }: { uri: string }) {
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const player = useAudioPlayer(uri);
+  const status = useAudioPlayerStatus(player);
 
-  useEffect(() => {
-    return () => {
-      sound?.unloadAsync();
-    };
-  }, [sound]);
-
-  const handlePress = async () => {
-    if (sound) {
-      const status = await sound.getStatusAsync();
-      if (status.isLoaded && status.isPlaying) {
-        await sound.pauseAsync();
-        setIsPlaying(false);
-      } else {
-        await sound.playAsync();
-        setIsPlaying(true);
-      }
-      return;
+  const handlePress = () => {
+    if (status.playing) {
+      player.pause();
+    } else {
+      player.play();
     }
-    const { sound: newSound } = await Audio.Sound.createAsync(
-      { uri },
-      { shouldPlay: true },
-      (status) => {
-        if (status.isLoaded && status.didJustFinish) setIsPlaying(false);
-      }
-    );
-    setSound(newSound);
-    setIsPlaying(true);
   };
 
   return (
     <Pressable style={styles.audioButton} onPress={handlePress}>
       <Text style={styles.audioButtonLabel}>
-        {isPlaying ? "⏸ Pausar" : "▶ Reproducir nota de voz"}
+        {status.playing ? "⏸ Pausar" : "▶ Reproducir nota de voz"}
       </Text>
     </Pressable>
+  );
+}
+
+function VideoPreview({ uri }: { uri: string }) {
+  const player = useVideoPlayer(uri);
+  return (
+    <VideoView
+      player={player}
+      style={styles.mediaPreview}
+      nativeControls
+      contentFit="contain"
+    />
   );
 }
 
@@ -161,12 +153,7 @@ export default function FieldNoteDetailScreen() {
         ) : null}
 
         {note.type === "video" && note.fileUri ? (
-          <Video
-            source={{ uri: note.fileUri }}
-            style={styles.mediaPreview}
-            useNativeControls
-            resizeMode={ResizeMode.CONTAIN}
-          />
+          <VideoPreview uri={note.fileUri} />
         ) : null}
 
         {note.type === "voz" && note.fileUri ? (

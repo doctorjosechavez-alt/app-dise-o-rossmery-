@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from "react-native";
-import { ResizeMode, Video } from "expo-av";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 import { Button } from "@/components/Button";
 import { TextField } from "@/components/TextField";
@@ -17,6 +17,18 @@ const TITLES: Record<FieldNoteType, string> = {
   voz: "Guardar nota de voz",
   texto: "Nueva nota de texto",
 };
+
+function VideoPreview({ uri }: { uri: string }) {
+  const player = useVideoPlayer(uri);
+  return (
+    <VideoView
+      player={player}
+      style={styles.mediaPreview}
+      nativeControls
+      contentFit="contain"
+    />
+  );
+}
 
 export default function SaveFieldNoteScreen() {
   const params = useLocalSearchParams<{
@@ -72,14 +84,7 @@ export default function SaveFieldNoteScreen() {
           <Image source={{ uri: fileUri }} style={styles.mediaPreview} />
         ) : null}
 
-        {type === "video" && fileUri ? (
-          <Video
-            source={{ uri: fileUri }}
-            style={styles.mediaPreview}
-            useNativeControls
-            resizeMode={ResizeMode.CONTAIN}
-          />
-        ) : null}
+        {type === "video" && fileUri ? <VideoPreview uri={fileUri} /> : null}
 
         <Text style={styles.label}>Área</Text>
         <AreaPicker value={areaId} onChange={setAreaId} allowNone />
