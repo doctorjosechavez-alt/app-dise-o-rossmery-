@@ -54,10 +54,11 @@ export async function scheduleTaskNotification(
       body: body ?? undefined,
       sound: true,
     },
-    trigger:
-      Platform.OS === "android"
-        ? { date, channelId: ANDROID_CHANNEL_ID }
-        : date,
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date,
+      channelId: Platform.OS === "android" ? ANDROID_CHANNEL_ID : undefined,
+    },
   });
 }
 

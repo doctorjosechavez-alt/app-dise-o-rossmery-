@@ -37,9 +37,9 @@
       "expo-calendar",
       "expo-splash-screen",
       [
-        "expo-av",
+        "expo-audio",
         {
-          "microphonePermission": "Se usa el micrófono para grabar notas de voz y el audio de los videos."
+          "microphonePermission": "Se usa el micrófono para grabar notas de voz."
         }
       ],
       [
@@ -50,7 +50,8 @@
           "isAccessMediaLocationEnabled": false
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      "expo-asset"
     ],
     "extra": {
       "router": {

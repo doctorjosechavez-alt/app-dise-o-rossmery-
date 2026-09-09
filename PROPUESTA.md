@@ -12,13 +12,23 @@ Pendientes (con calendario nativo + notificación local), y Medidas
 estándar (biblioteca poblada + buscador). Cada uno con listar, crear,
 ver/editar y eliminar donde aplica.
 
-Verificado de verdad, no solo escrito: `tsc` y `eslint` limpios, y el
-bundle completo de Metro exporta sin errores — **1054 módulos**, incluyendo
-`@react-native-community/datetimepicker` y `expo-notifications`.
+Verificado de verdad, no solo escrito: `tsc`, `eslint` y `expo-doctor`
+limpios, y el bundle completo de Metro exporta sin errores — **1468
+módulos**.
 
 Además: botón para guardar fotos/videos de notas de campo en la galería,
 y notificaciones locales para pendientes con fecha. Los catálogos de
 `areas.ts` y `standardMeasures.ts` quedaron confirmados sin cambios.
+
+**Actualizado a Expo SDK 57** (desde SDK 51) — necesario porque Expo Go
+en la App Store solo soporta la versión más reciente del SDK; si el
+proyecto se queda atrás, Expo Go deja de poder abrirlo (mensaje "Project
+is incompatible with this version of Expo Go"). Como parte de la
+actualización, `expo-av` (descontinuado por Expo) se reemplazó por
+`expo-audio` (grabación/reproducción de voz) y `expo-video` (reproducción
+de video) — el comportamiento para la usuaria es idéntico. Cuando Expo
+Go vuelva a subir de versión más adelante, este proyecto va a necesitar
+otra actualización de SDK para seguir abriendo ahí.
 
 - Navegación con expo-router (`app/`), con la ficha de cada cliente como
   "hub" hacia sus 4 módulos (con conteo real de cada uno).
@@ -77,7 +87,7 @@ incluidos en Expo Go — no hay ningún módulo de terceros que requiera un
 
 ## Cómo funciona la grabación de notas de voz
 
-- Se graba con `expo-av` (`src/features/fieldNotes/useVoiceRecorder.ts`)
+- Se graba con `expo-audio` (`src/features/fieldNotes/useVoiceRecorder.ts`)
   — sin transcripción automática. Se probó y se descartó a propósito: la
   transcripción on-device (`expo-speech-recognition`) requería un
   *development build* con cuenta de Apple Developer para poder probar la
@@ -208,8 +218,11 @@ generado en el teléfono no choca con el de otro.
 ## Otras notas de viabilidad técnica
 
 - **Fotos/videos:** se guardan primero en el almacenamiento propio de la
-  app (`expo-file-system`, funciona 100% offline); opcionalmente también
-  en la galería (ver arriba).
+  app (`expo-file-system/legacy` — desde SDK 57 el paquete tiene una API
+  nueva basada en clases `File`/`Directory`; se usa la versión "legacy"
+  porque es funcionalmente idéntica a la que ya estaba probada, y sigue
+  siendo soportada oficialmente por Expo), funciona 100% offline;
+  opcionalmente también en la galería (ver arriba).
 - **Calendario nativo:** `expo-calendar` crea/edita/borra eventos reales
   (no un link). En Android crea un calendario local dedicado "Estudio de
   Obra" la primera vez que se usa, para no mezclar con el calendario
